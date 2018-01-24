@@ -1,0 +1,4 @@
+.DS_STORE
+.watchmanconfig
+node_modules
+react-lifecycles-compat.*
