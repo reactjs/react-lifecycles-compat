@@ -10,14 +10,17 @@
     "build:dev": "NODE_ENV=development webpack ./react-lifecycles-compat.js",
     "build:prod": "NODE_ENV=production webpack ./react-lifecycles-compat.min.js",
     "build": "npm run build:dev && npm run build:prod",
+    "lint": "eslint index.js",
     "prepublish": "npm test && npm run build",
-    "prettier": "prettier --write  {index,test}.js"
+    "prettier": "prettier --write {index,test}.js"
   },
   "dependencies": {
     "webpack": "^2"
   },
   "devDependencies": {
     "chalk": "^2.3.0",
+    "eslint": "^4.16.0",
+    "eslint-config-es5": "^0.5.0",
     "jest": "^22.1.4",
     "jest-cli": "^22.1.4",
     "prettier": "^1.10.2"
