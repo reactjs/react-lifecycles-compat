@@ -10,6 +10,7 @@
     "build:prod": "NODE_ENV=production webpack ./react-lifecycles-compat.min.js",
     "build": "npm run build:dev && npm run build:prod",
     "lint": "eslint index.js",
+    "postinstall": "node install.js",
     "prepublish": "npm test && npm run build",
     "prettier": "prettier --write {index,test}.js"
   },

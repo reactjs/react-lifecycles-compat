@@ -1,181 +1,172 @@
 'use strict';
 
-const {lstatSync, readdirSync} = require('fs');
-const {join} = require('path')
+const {readdirSync} = require('fs');
+const {join} = require('path');
 
 const polyfill = require('./index');
 
-const REACT_VERSIONS = readdirSync(join(__dirname, 'react'));
+readdirSync(join(__dirname, 'react')).forEach(version => {
+  const basePath = `./react/${version}/node_modules/`;
 
-describe('react-lifecycles-compat', () => {
-  let createReactClass;
-  let React;
-  let ReactDOM;
+  const createReactClass = require(basePath + 'create-react-class');
+  const React = require(basePath + 'react');
+  const ReactDOM = require(basePath + 'react-dom');
 
-  REACT_VERSIONS.forEach(version => {
-    jest.resetModules();
+  describe(`react-lifecycles-compat (react@${version})`, () => {
+    it('should initialize and update state correctly', () => {
+      class ClassComponent extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {count: 1};
+        }
+        static getDerivedStateFromProps(nextProps, prevState) {
+          return {
+            count: prevState.count + nextProps.incrementBy,
+          };
+        }
+        render() {
+          return React.createElement('div', null, this.state.count);
+        }
+      }
 
-    const basePath = `./react/${version}/node_modules/`;
+      polyfill(ClassComponent);
 
-    createReactClass = require(basePath + 'create-react-class');
-    React = require(basePath + 'react');
-    ReactDOM = require(basePath + 'react-dom');
+      const container = document.createElement('div');
+      ReactDOM.render(
+        React.createElement(ClassComponent, {incrementBy: 2}),
+        container
+      );
 
-    describe(`react version ${version}`, () => {
-      it('should initialize and update state correctly', () => {
-        class ClassComponent extends React.Component {
-          constructor(props) {
-            super(props);
-            this.state = {count: 1};
-          }
-          static getDerivedStateFromProps(nextProps, prevState) {
+      expect(container.textContent).toBe('3');
+
+      ReactDOM.render(
+        React.createElement(ClassComponent, {incrementBy: 3}),
+        container
+      );
+
+      expect(container.textContent).toBe('6');
+    });
+
+    it('should support create-react-class components', () => {
+      const CRCComponent = createReactClass({
+        statics: {
+          getDerivedStateFromProps(nextProps, prevState) {
             return {
               count: prevState.count + nextProps.incrementBy,
             };
-          }
-          render() {
-            return React.createElement('div', null, this.state.count);
-          }
-        }
-
-        polyfill(ClassComponent);
-
-        const container = document.createElement('div');
-        ReactDOM.render(
-          React.createElement(ClassComponent, {incrementBy: 2}),
-          container
-        );
-
-        expect(container.textContent).toBe('3');
-
-        ReactDOM.render(
-          React.createElement(ClassComponent, {incrementBy: 3}),
-          container
-        );
-
-        expect(container.textContent).toBe('6');
+          },
+        },
+        getInitialState() {
+          return {count: 1};
+        },
+        render() {
+          return React.createElement('div', null, this.state.count);
+        },
       });
 
-      it('should support create-react-class components', () => {
-        const CRCComponent = createReactClass({
-          statics: {
-            getDerivedStateFromProps(nextProps, prevState) {
-              return {
-                count: prevState.count + nextProps.incrementBy,
-              };
-            },
-          },
-          getInitialState() {
-            return {count: 1};
-          },
-          render() {
-            return React.createElement('div', null, this.state.count);
-          },
-        });
+      polyfill(CRCComponent);
 
-        polyfill(CRCComponent);
+      const container = document.createElement('div');
+      ReactDOM.render(
+        React.createElement(CRCComponent, {incrementBy: 2}),
+        container
+      );
 
-        const container = document.createElement('div');
-        ReactDOM.render(
-          React.createElement(CRCComponent, {incrementBy: 2}),
-          container
-        );
+      expect(container.textContent).toBe('3');
 
-        expect(container.textContent).toBe('3');
+      ReactDOM.render(
+        React.createElement(CRCComponent, {incrementBy: 3}),
+        container
+      );
 
-        ReactDOM.render(
-          React.createElement(CRCComponent, {incrementBy: 3}),
-          container
-        );
+      expect(container.textContent).toBe('6');
+    });
 
-        expect(container.textContent).toBe('6');
-      });
-
-      it('should support getDerivedStateFromProps in subclass', () => {
-        class BaseClass extends React.Component {
-          constructor(props) {
-            super(props);
-            this.state = {};
-          }
-          static getDerivedStateFromProps(nextProps, prevState) {
-            return {
-              foo: 'foo'
-            };
-          }
-          render() {
-            return null;
-          }
+    it('should support getDerivedStateFromProps in subclass', () => {
+      class BaseClass extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {};
         }
-
-        polyfill(BaseClass);
-
-        class SubClass extends BaseClass {
-          static getDerivedStateFromProps(nextProps, prevState) {
-            return {
-              ...BaseClass.getDerivedStateFromProps(nextProps, prevState),
-              bar: 'bar'
-            };
-          }
-          render() {
-            return React.createElement('div', null, this.state.foo + ',' + this.state.bar);
-          }
+        static getDerivedStateFromProps(nextProps, prevState) {
+          return {
+            foo: 'foo',
+          };
         }
-
-        const container = document.createElement('div');
-        ReactDOM.render(
-          React.createElement(SubClass),
-          container
-        );
-
-        expect(container.textContent).toBe('foo,bar');
-      });
-
-      it('should error for non-class components', () => {
-        function FunctionalComponent() {
+        render() {
           return null;
         }
+      }
 
-        expect(() => polyfill(FunctionalComponent)).toThrow(
-          'Can only polyfill class components'
-        );
-      });
+      polyfill(BaseClass);
 
-      it('should ignore component with cWM or cWRP lifecycles if they do not define static gDSFP', () => {
-        class ComponentWithLifecycles extends React.Component {
-          componentWillMount() {}
-          componentWillReceiveProps() {}
-          render() {
-            return null;
-          }
+      class SubClass extends BaseClass {
+        static getDerivedStateFromProps(nextProps, prevState) {
+          return {
+            ...BaseClass.getDerivedStateFromProps(nextProps, prevState),
+            bar: 'bar',
+          };
         }
-
-        polyfill(ComponentWithLifecycles);
-      });
-
-      it('should error if component already has cWM or cWRP lifecycles with static gDSFP', () => {
-        class ComponentWithWillMount extends React.Component {
-          componentWillMount() {}
-          static getDerivedStateFromProps() {}
-          render() {
-            return null;
-          }
+        render() {
+          return React.createElement(
+            'div',
+            null,
+            this.state.foo + ',' + this.state.bar
+          );
         }
+      }
 
-        class ComponentWithWillReceiveProps extends React.Component {
-          componentWillReceiveProps() {}
-          static getDerivedStateFromProps() {}
-          render() {
-            return null;
-          }
+      const container = document.createElement('div');
+      ReactDOM.render(React.createElement(SubClass), container);
+
+      expect(container.textContent).toBe('foo,bar');
+    });
+
+    it('should error for non-class components', () => {
+      function FunctionalComponent() {
+        return null;
+      }
+
+      expect(() => polyfill(FunctionalComponent)).toThrow(
+        'Can only polyfill class components'
+      );
+    });
+
+    it('should ignore component with cWM or cWRP lifecycles if they do not define static gDSFP', () => {
+      class ComponentWithLifecycles extends React.Component {
+        componentWillMount() {}
+        componentWillReceiveProps() {}
+        render() {
+          return null;
         }
+      }
 
-        expect(() => polyfill(ComponentWithWillMount)).toThrow(
-          'Cannot polyfill if componentWillMount already exists'
-        );
-        expect(() => polyfill(ComponentWithWillReceiveProps)).toThrow(
-          'Cannot polyfill if componentWillReceiveProps already exists'
-        );
-      });
+      polyfill(ComponentWithLifecycles);
+    });
+
+    it('should error if component already has cWM or cWRP lifecycles with static gDSFP', () => {
+      class ComponentWithWillMount extends React.Component {
+        componentWillMount() {}
+        static getDerivedStateFromProps() {}
+        render() {
+          return null;
+        }
+      }
+
+      class ComponentWithWillReceiveProps extends React.Component {
+        componentWillReceiveProps() {}
+        static getDerivedStateFromProps() {}
+        render() {
+          return null;
+        }
+      }
+
+      expect(() => polyfill(ComponentWithWillMount)).toThrow(
+        'Cannot polyfill if componentWillMount already exists'
+      );
+      expect(() => polyfill(ComponentWithWillReceiveProps)).toThrow(
+        'Cannot polyfill if componentWillReceiveProps already exists'
+      );
     });
   });
 });
