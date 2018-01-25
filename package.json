@@ -14,6 +14,11 @@
     "prepublish": "npm test && npm run build",
     "prettier": "prettier --write {index,test}.js"
   },
+  "files": [
+    "index.js",
+    "react-lifecycles-compat.js",
+    "react-lifecycles-compat.min.js"
+  ],
   "dependencies": {
     "webpack": "^2"
   },
