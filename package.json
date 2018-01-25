@@ -1,10 +1,9 @@
 {
   "name": "react-lifecycles-compat",
   "version": "1.0.0",
-  "description": "Compatibility polyfill for class components and React versions <= 16.2",
+  "description": "Backwards compatibility polyfill for React class components",
   "main": "index.js",
   "license": "MIT",
-  "private": true,
   "scripts": {
     "test": "jest test.js",
     "build:dev": "NODE_ENV=development webpack ./react-lifecycles-compat.js",
