@@ -1,9 +1,11 @@
 'use strict';
 
+const {lstatSync, readdirSync} = require('fs');
+const {join} = require('path')
+
 const polyfill = require('./index');
 
-// TODO Test React 16.3 as well (once it exists)
-const REACT_VERSIONS = ['15.6', '16.2'];
+const REACT_VERSIONS = readdirSync(join(__dirname, 'react'));
 
 describe('react-lifecycles-compat', () => {
   let createReactClass;
