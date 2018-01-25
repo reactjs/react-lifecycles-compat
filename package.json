@@ -6,7 +6,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "test": "node ./test-runner.js",
+    "test": "jest test.js",
     "build:dev": "NODE_ENV=development webpack ./react-lifecycles-compat.js",
     "build:prod": "NODE_ENV=production webpack ./react-lifecycles-compat.min.js",
     "build": "npm run build:dev && npm run build:prod",
