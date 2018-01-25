@@ -75,6 +75,45 @@ describe('react-lifecycles-compat', () => {
     expect(container.textContent).toBe('6');
   });
 
+  it('should support getDerivedStateFromProps in subclass', () => {
+    class BaseClass extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {};
+      }
+      static getDerivedStateFromProps(nextProps, prevState) {
+        return {
+          foo: 'foo'
+        };
+      }
+      render() {
+        return null;
+      }
+    }
+
+    polyfill(BaseClass);
+
+    class SubClass extends BaseClass {
+      static getDerivedStateFromProps(nextProps, prevState) {
+        return {
+          ...BaseClass.getDerivedStateFromProps(nextProps, prevState),
+          bar: 'bar'
+        };
+      }
+      render() {
+        return React.createElement('div', null, this.state.foo + ',' + this.state.bar);
+      }
+    }
+
+    const container = document.createElement('div');
+    ReactDOM.render(
+      React.createElement(SubClass),
+      container
+    );
+
+    expect(container.textContent).toBe('foo,bar');
+  });
+
   it('should error for non-class components', () => {
     function FunctionalComponent() {
       return null;
