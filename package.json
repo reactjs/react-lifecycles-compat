@@ -6,8 +6,8 @@
   "license": "MIT",
   "scripts": {
     "test": "jest test.js",
-    "build:dev": "NODE_ENV=development webpack ./react-lifecycles-compat.js",
-    "build:prod": "NODE_ENV=production webpack ./react-lifecycles-compat.min.js",
+    "build:dev": "NODE_ENV=development webpack",
+    "build:prod": "NODE_ENV=production webpack",
     "build": "npm run build:dev && npm run build:prod",
     "lint": "eslint index.js",
     "postinstall": "node install.js",
