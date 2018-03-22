@@ -54,6 +54,8 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
         });
 
         it('should support create-react-class components', () => {
+          let componentDidUpdateCalled = false;
+
           const CRCComponent = createReactClass({
             statics: {
               getDerivedStateFromProps(nextProps, prevState) {
@@ -64,6 +66,17 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
             },
             getInitialState() {
               return {count: 1};
+            },
+            getSnapshotBeforeUpdate(prevProps, prevState) {
+              return prevState.count * 2 + this.state.count * 3;
+            },
+            componentDidUpdate(prevProps, prevState, snapshot) {
+              expect(prevProps).toEqual({incrementBy: 2});
+              expect(prevState).toEqual({count: 3});
+              expect(this.props).toEqual({incrementBy: 3});
+              expect(this.state).toEqual({count: 6});
+              expect(snapshot).toBe(24);
+              componentDidUpdateCalled = true;
             },
             render() {
               return React.createElement('div', null, this.state.count);
@@ -79,6 +92,7 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
           );
 
           expect(container.textContent).toBe('3');
+          expect(componentDidUpdateCalled).toBe(false);
 
           ReactDOM.render(
             React.createElement(CRCComponent, {incrementBy: 3}),
@@ -86,6 +100,78 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
           );
 
           expect(container.textContent).toBe('6');
+          expect(componentDidUpdateCalled).toBe(true);
+        });
+
+        it('should support class components', () => {
+          let componentDidUpdateCalled = false;
+
+          class Component extends React.Component {
+            constructor(props) {
+              super(props);
+              this.state = {count: 1};
+            }
+            static getDerivedStateFromProps(nextProps, prevState) {
+              return {
+                count: prevState.count + nextProps.incrementBy,
+              };
+            }
+            getSnapshotBeforeUpdate(prevProps, prevState) {
+              return prevState.count * 2 + this.state.count * 3;
+            }
+            componentDidUpdate(prevProps, prevState, snapshot) {
+              expect(prevProps).toEqual({incrementBy: 2});
+              expect(prevState).toEqual({count: 3});
+              expect(this.props).toEqual({incrementBy: 3});
+              expect(this.state).toEqual({count: 6});
+              expect(snapshot).toBe(24);
+              componentDidUpdateCalled = true;
+            }
+            render() {
+              return React.createElement('div', null, this.state.count);
+            }
+          }
+
+          polyfill(Component);
+
+          const container = document.createElement('div');
+          ReactDOM.render(
+            React.createElement(Component, {incrementBy: 2}),
+            container
+          );
+
+          expect(container.textContent).toBe('3');
+          expect(componentDidUpdateCalled).toBe(false);
+
+          ReactDOM.render(
+            React.createElement(Component, {incrementBy: 3}),
+            container
+          );
+
+          expect(container.textContent).toBe('6');
+          expect(componentDidUpdateCalled).toBe(true);
+        });
+
+        it('should throw if componentDidUpdate is not defined on the prototype', () => {
+          let componentDidUpdateCalled = false;
+
+          class Component extends React.Component {
+            constructor(props) {
+              super(props);
+
+              Object.defineProperty(this, 'componentDidUpdate', {
+                value: (prevProps, prevState, snapshot) => {},
+              });
+            }
+            getSnapshotBeforeUpdate(prevProps, prevState) {}
+            render() {
+              return null;
+            }
+          }
+
+          expect(() => polyfill(Component)).toThrow(
+            'Cannot polyfill getSnapshotBeforeUpdate() unless componentDidUpdate() exists on the prototype'
+          );
         });
 
         it('should support getDerivedStateFromProps in subclass', () => {
@@ -172,6 +258,20 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
           );
           expect(() => polyfill(ComponentWithWillReceiveProps)).toThrow(
             'Cannot polyfill if componentWillReceiveProps already exists'
+          );
+        });
+
+        it('should error if component already has cWU lifecycles with gSBU', () => {
+          class ComponentWithWillUpdate extends React.Component {
+            componentWillUpdate() {}
+            getSnapshotBeforeUpdate() {}
+            render() {
+              return null;
+            }
+          }
+
+          expect(() => polyfill(ComponentWithWillUpdate)).toThrow(
+            'Cannot polyfill if componentWillUpdate already exists'
           );
         });
       });

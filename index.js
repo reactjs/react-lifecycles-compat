@@ -26,10 +26,24 @@ function componentWillReceiveProps(nextProps) {
   }
 }
 
+function componentWillUpdate(nextProps, nextState) {
+  var prevProps = this.props;
+  var prevState = this.state;
+  this.props = nextProps;
+  this.state = nextState;
+  this.__reactInternalSnapshot = this.getSnapshotBeforeUpdate(
+    prevProps,
+    prevState
+  );
+  this.props = prevProps;
+  this.state = prevState;
+}
+
 // React may warn about cWM/cWRP/cWU methods being deprecated.
 // Add a flag to suppress these warnings for this special case.
 componentWillMount.__suppressDeprecationWarning = true;
 componentWillReceiveProps.__suppressDeprecationWarning = true;
+componentWillUpdate.__suppressDeprecationWarning = true;
 
 module.exports = function polyfill(Component) {
   if (!Component.prototype || !Component.prototype.isReactComponent) {
@@ -49,6 +63,34 @@ module.exports = function polyfill(Component) {
 
     Component.prototype.componentWillMount = componentWillMount;
     Component.prototype.componentWillReceiveProps = componentWillReceiveProps;
+  }
+
+  if (typeof Component.prototype.getSnapshotBeforeUpdate === 'function') {
+    if (typeof Component.prototype.componentWillUpdate === 'function') {
+      throw new Error('Cannot polyfill if componentWillUpdate already exists');
+    }
+
+    if (typeof Component.prototype.componentDidUpdate !== 'function') {
+      throw new Error(
+        'Cannot polyfill getSnapshotBeforeUpdate() unless componentDidUpdate() exists on the prototype'
+      );
+    }
+
+    Component.prototype.componentWillUpdate = componentWillUpdate;
+
+    var componentDidUpdate = Component.prototype.componentDidUpdate;
+
+    Component.prototype.componentDidUpdate = function componentDidUpdatePolyfill(
+      prevProps,
+      prevState
+    ) {
+      componentDidUpdate.call(
+        this,
+        prevProps,
+        prevState,
+        this.__reactInternalSnapshot
+      );
+    };
   }
 
   return Component;
