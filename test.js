@@ -19,6 +19,15 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
       const ReactDOM = require(basePath + 'react-dom');
 
       describe(`react@${version}`, () => {
+        beforeAll(() => {
+          jest.spyOn(console, 'error');
+          global.console.error.mockImplementation(() => {});
+        });
+
+        afterAll(() => {
+          global.console.error.mockRestore();
+        });
+
         it('should initialize and update state correctly', () => {
           class ClassComponent extends React.Component {
             constructor(props) {
@@ -212,6 +221,72 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
           ReactDOM.render(React.createElement(SubClass), container);
 
           expect(container.textContent).toBe('foo,bar');
+        });
+
+        it('should properly recover from errors thrown by getSnapshotBeforeUpdate()', () => {
+          let instance;
+
+          class ErrorBoundary extends React.Component {
+            constructor(props) {
+              super(props);
+              this.state = {error: null};
+            }
+            componentDidCatch(error) {
+              this.setState({error});
+            }
+
+            render() {
+              return this.state.error !== null ? null : this.props.children;
+            }
+          }
+
+          class Component extends React.Component {
+            constructor(props) {
+              super(props);
+              this.state = {count: 1};
+            }
+            static getDerivedStateFromProps(nextProps, prevState) {
+              return {
+                count: prevState.count + nextProps.incrementBy,
+              };
+            }
+            getSnapshotBeforeUpdate(prevProps) {
+              throw Error('whoops');
+            }
+            componentDidUpdate(prevProps, prevState, snapshot) {}
+            render() {
+              instance = this;
+
+              return null;
+            }
+          }
+
+          polyfill(Component);
+
+          const container = document.createElement('div');
+          ReactDOM.render(
+            React.createElement(
+              ErrorBoundary,
+              null,
+              React.createElement(Component, {incrementBy: 2})
+            ),
+            container
+          );
+
+          try {
+            ReactDOM.render(
+              React.createElement(
+                ErrorBoundary,
+                null,
+                React.createElement(Component, {incrementBy: 3})
+              ),
+              container
+            );
+          } catch (error) {}
+
+          // Verify that props and state get reset after the error
+          expect(instance.props.incrementBy).toBe(2);
+          expect(instance.state.count).toBe(3);
         });
 
         it('should error for non-class components', () => {

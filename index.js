@@ -31,12 +31,15 @@ function componentWillUpdate(nextProps, nextState) {
   var prevState = this.state;
   this.props = nextProps;
   this.state = nextState;
-  this.__reactInternalSnapshot = this.getSnapshotBeforeUpdate(
-    prevProps,
-    prevState
-  );
-  this.props = prevProps;
-  this.state = prevState;
+  try {
+    this.__reactInternalSnapshot = this.getSnapshotBeforeUpdate(
+      prevProps,
+      prevState
+    );
+  } finally {
+    this.props = prevProps;
+    this.state = prevState;
+  }
 }
 
 // React may warn about cWM/cWRP/cWU methods being deprecated.
