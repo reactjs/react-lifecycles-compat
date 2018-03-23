@@ -2,7 +2,7 @@
 
 ## What is this project?
 
-React version 17 will deprecate several of the class component API lifecycles: `componentWillMount`, `componentWillReceiveProps`, and `componentWillUpdate`. (See [React RFC 6](https://github.com/reactjs/rfcs/pull/6) for more information about this decision.)
+React version 17 will deprecate several of the class component API lifecycles: `componentWillMount`, `componentWillReceiveProps`, and `componentWillUpdate` and introduce a couple of new ones. (Check out the [ReactJS blog](https://reactjs.org/blog) for more information about this decision.)
 
 This would typically require any third party libraries dependent on those lifecycles to release a new major version in order to adhere to semver. However, the `react-lifecycles-compat` polyfill offers a way to remain compatible with older versions of React (0.14.9+). 🎉😎
 
@@ -17,34 +17,59 @@ yarn add react-lifecycles-compat
 npm install react-lifecycles-compat --save
 ```
 
-Next, update your component to use the new static lifecycle, `getDerivedStateFromProps`. For example:
+Next, update your component and replace any of the deprecated lifecycles with new ones introduced with React 16.3. (See [the examples](#examples) below.)
+
+Lastly, use the polyfill to make your component backwards compatible with older versions of React:
 ```js
-// Before
+import React from 'react';
+import polyfill from 'react-lifecycles-compat';
+
+class ExampleComponent extends React.Component {
+  // ...
+}
+
+// Polyfill your component so the new lifecycles will work with older versions of React:
+polyfill(ExampleComponent);
+
+export default ExampleComponent;
+```
+
+## Examples
+
+### `getDerivedStateFromProps` example
+Before:
+```js
 class ExampleComponent extends React.Component {
   state = {
-    derivedData: computeDerivedState(this.props)
+    isScrollingDown: false,
   };
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.someValue !== nextProps.someValue) {
+    if (this.props.currentRow !== nextProps.currentRow) {
       this.setState({
-        derivedData: computeDerivedState(nextProps)
+        isScrollingDown:
+          nextProps.currentRow > this.props.currentRow,
       });
     }
   }
 }
-
-// After
+```
+After:
+```js
 class ExampleComponent extends React.Component {
   // Initialize state in constructor,
   // Or with a property initializer.
-  state = {};
+  state = {
+    isScrollingDown: false,
+    lastRow: null,
+  };
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    if (prevState.someMirroredValue !== nextProps.someValue) {
+    if (nextProps.currentRow !== prevState.lastRow) {
       return {
-        derivedData: computeDerivedState(nextProps),
-        someMirroredValue: nextProps.someValue
+        isScrollingDown:
+          nextProps.currentRow > prevState.lastRow,
+        lastRow: nextProps.currentRow,
       };
     }
 
@@ -54,21 +79,61 @@ class ExampleComponent extends React.Component {
 }
 ```
 
-Lastly, use the polyfill to make your component backwards compatible with older versions of React:
-```js
-import React from 'react';
-import polyfill from 'react-lifecycles-compat';
+### `getSnapshotBeforeUpdate` example
 
-class ExampleComponent extends React.Component {
-  static getDerivedStateFromProps(nextProps, prevState) {
-    // ...
+Before:
+```js
+class ScrollingList extends React.Component {
+  listRef = null;
+  prevScrollHeight = null;
+
+  componentWillUpdate(nextProps, nextState) {
+    if (this.props.list.length < nextProps.list.length) {
+      this.prevScrollHeight = this.listRef.scrollHeight;
+    }
   }
 
-  // ...
+  componentDidUpdate(prevProps, prevState) {
+    if (this.prevScrollHeight !== null) {
+      this.listRef.scrollTop +=
+        this.listRef.scrollHeight - this.prevScrollHeight;
+      this.prevScrollHeight = null;
+    }
+  }
+
+  render() {
+    return <div ref={this.setListRef}>{/* ...contents... */}</div>;
+  }
+
+  setListRef = ref => {
+    this.listRef = ref;
+  };
 }
+```
+After:
+```js
+class ScrollingList extends React.Component {
+  listRef = null;
 
-// Polyfill your component to work with older versions of React:
-polyfill(ExampleComponent);
+  getSnapshotBeforeUpdate(prevProps, prevState) {
+    if (prevProps.list.length < this.props.list.length) {
+      return this.listRef.scrollHeight;
+    }
+    return null;
+  }
 
-export default ExampleComponent;
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (snapshot !== null) {
+      this.listRef.scrollTop += this.listRef.scrollHeight - snapshot;
+    }
+  }
+
+  render() {
+    return <div ref={this.setListRef}>{/* ...contents... */}</div>;
+  }
+
+  setListRef = ref => {
+    this.listRef = ref;
+  };
+}
 ```
