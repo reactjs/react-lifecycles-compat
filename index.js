@@ -27,11 +27,11 @@ function componentWillReceiveProps(nextProps) {
 }
 
 function componentWillUpdate(nextProps, nextState) {
-  var prevProps = this.props;
-  var prevState = this.state;
-  this.props = nextProps;
-  this.state = nextState;
   try {
+    var prevProps = this.props;
+    var prevState = this.state;
+    this.props = nextProps;
+    this.state = nextState;
     this.__reactInternalSnapshot = this.getSnapshotBeforeUpdate(
       prevProps,
       prevState
@@ -55,12 +55,14 @@ module.exports = function polyfill(Component) {
 
   if (typeof Component.getDerivedStateFromProps === 'function') {
     if (typeof Component.prototype.componentWillMount === 'function') {
-      throw new Error('Cannot polyfill if componentWillMount already exists');
+      throw new Error(
+        'Cannot polyfill getDerivedStateFromProps() for components that define componentWillMount()'
+      );
     } else if (
       typeof Component.prototype.componentWillReceiveProps === 'function'
     ) {
       throw new Error(
-        'Cannot polyfill if componentWillReceiveProps already exists'
+        'Cannot polyfill getDerivedStateFromProps() for components that define componentWillReceiveProps()'
       );
     }
 
@@ -70,12 +72,13 @@ module.exports = function polyfill(Component) {
 
   if (typeof Component.prototype.getSnapshotBeforeUpdate === 'function') {
     if (typeof Component.prototype.componentWillUpdate === 'function') {
-      throw new Error('Cannot polyfill if componentWillUpdate already exists');
+      throw new Error(
+        'Cannot polyfill getSnapshotBeforeUpdate() for components that define componentWillUpdate()'
+      );
     }
-
     if (typeof Component.prototype.componentDidUpdate !== 'function') {
       throw new Error(
-        'Cannot polyfill getSnapshotBeforeUpdate() unless componentDidUpdate() exists on the prototype'
+        'Cannot polyfill getSnapshotBeforeUpdate() for components that do not define componentDidUpdate()'
       );
     }
 

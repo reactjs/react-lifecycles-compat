@@ -161,28 +161,6 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
           expect(componentDidUpdateCalled).toBe(true);
         });
 
-        it('should throw if componentDidUpdate is not defined on the prototype', () => {
-          let componentDidUpdateCalled = false;
-
-          class Component extends React.Component {
-            constructor(props) {
-              super(props);
-
-              Object.defineProperty(this, 'componentDidUpdate', {
-                value: (prevProps, prevState, snapshot) => {},
-              });
-            }
-            getSnapshotBeforeUpdate(prevProps, prevState) {}
-            render() {
-              return null;
-            }
-          }
-
-          expect(() => polyfill(Component)).toThrow(
-            'Cannot polyfill getSnapshotBeforeUpdate() unless componentDidUpdate() exists on the prototype'
-          );
-        });
-
         it('should support getDerivedStateFromProps in subclass', () => {
           class BaseClass extends React.Component {
             constructor(props) {
@@ -311,7 +289,7 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
           polyfill(ComponentWithLifecycles);
         });
 
-        it('should error if component already has cWM or cWRP lifecycles with static gDSFP', () => {
+        it('should error if component defines gDSFP but already has cWM or cWRP', () => {
           class ComponentWithWillMount extends React.Component {
             componentWillMount() {}
             static getDerivedStateFromProps() {}
@@ -329,14 +307,14 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
           }
 
           expect(() => polyfill(ComponentWithWillMount)).toThrow(
-            'Cannot polyfill if componentWillMount already exists'
+            'Cannot polyfill getDerivedStateFromProps() for components that define componentWillMount()'
           );
           expect(() => polyfill(ComponentWithWillReceiveProps)).toThrow(
-            'Cannot polyfill if componentWillReceiveProps already exists'
+            'Cannot polyfill getDerivedStateFromProps() for components that define componentWillReceiveProps()'
           );
         });
 
-        it('should error if component already has cWU lifecycles with gSBU', () => {
+        it('should error if component defines gSBU but already has cWU', () => {
           class ComponentWithWillUpdate extends React.Component {
             componentWillUpdate() {}
             getSnapshotBeforeUpdate() {}
@@ -346,7 +324,20 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
           }
 
           expect(() => polyfill(ComponentWithWillUpdate)).toThrow(
-            'Cannot polyfill if componentWillUpdate already exists'
+            'Cannot polyfill getSnapshotBeforeUpdate() for components that define componentWillUpdate()'
+          );
+        });
+
+        it('should error if component defines gSBU but does not define cDU', () => {
+          class Component extends React.Component {
+            getSnapshotBeforeUpdate(prevProps, prevState) {}
+            render() {
+              return null;
+            }
+          }
+
+          expect(() => polyfill(Component)).toThrow(
+            'Cannot polyfill getSnapshotBeforeUpdate() for components that do not define componentDidUpdate()'
           );
         });
       });
