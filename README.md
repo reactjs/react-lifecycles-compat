@@ -4,7 +4,7 @@
 
 React version 17 will deprecate several of the class component API lifecycles: `componentWillMount`, `componentWillReceiveProps`, and `componentWillUpdate`. (Read the [Update on Async rendering blog post](https://deploy-preview-596--reactjs.netlify.com/blog/2018/03/15/update-on-async-rendering.html) to learn more about why.) A couple of new lifecycles are also being added to better support [async rendering mode](https://reactjs.org/blog/2018/03/01/sneak-peek-beyond-react-16.html).
 
-Typically, this type of change would require third party libraries to release a new major version in order to adhere to semver. However, the `react-lifecycles-compat` polyfill offers a way to use the new lifecycles with older versions of React as well (0.14.9+) so no breaking release is required!
+Typically, this type of change would require third party libraries to release a new major version in order to adhere to semver. However, the `react-lifecycles-compat` polyfill offers a way to use the new lifecycles with older versions of React as well (0.14.9+) so no breaking release is required. This enables shared libraries to support both older and newer versions of React simultaneously.
 
 ## How can I use the polyfill
 
@@ -37,3 +37,11 @@ export default ExampleComponent;
 ## Which lifecycles are supported?
 
 Currently, this polyfill supports [static `getDerivedStateFromProps`](https://deploy-preview-587--reactjs.netlify.com/docs/react-component.html#static-getderivedstatefromprops) and [`getSnapshotBeforeUpdate`](https://deploy-preview-587--reactjs.netlify.com/docs/react-component.html#getsnapshotbeforeupdate)- both introduced in version 16.3.
+
+## Validation
+
+Note that in order for the polyfill to work, none of the following lifecycles can be defined by your component: `componentWillMount`, `componentWillReceiveProps`, or `componentWillUpdate`.
+
+Note also that if your component contains `getSnapshotBeforeUpdate`, `componentWillUpdate` must be defined as well.
+
+An error will be thrown if any of the above conditions are not met.
