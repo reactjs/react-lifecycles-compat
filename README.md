@@ -42,6 +42,6 @@ Currently, this polyfill supports [static `getDerivedStateFromProps`](https://de
 
 Note that in order for the polyfill to work, none of the following lifecycles can be defined by your component: `componentWillMount`, `componentWillReceiveProps`, or `componentWillUpdate`.
 
-Note also that if your component contains `getSnapshotBeforeUpdate`, `componentWillUpdate` must be defined as well.
+Note also that if your component contains `getSnapshotBeforeUpdate`, `componentDidUpdate` must be defined as well.
 
 An error will be thrown if any of the above conditions are not met.
