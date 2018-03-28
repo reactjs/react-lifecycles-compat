@@ -26,10 +26,27 @@ function componentWillReceiveProps(nextProps) {
   }
 }
 
+function componentWillUpdate(nextProps, nextState) {
+  try {
+    var prevProps = this.props;
+    var prevState = this.state;
+    this.props = nextProps;
+    this.state = nextState;
+    this.__reactInternalSnapshot = this.getSnapshotBeforeUpdate(
+      prevProps,
+      prevState
+    );
+  } finally {
+    this.props = prevProps;
+    this.state = prevState;
+  }
+}
+
 // React may warn about cWM/cWRP/cWU methods being deprecated.
 // Add a flag to suppress these warnings for this special case.
 componentWillMount.__suppressDeprecationWarning = true;
 componentWillReceiveProps.__suppressDeprecationWarning = true;
+componentWillUpdate.__suppressDeprecationWarning = true;
 
 module.exports = function polyfill(Component) {
   if (!Component.prototype || !Component.prototype.isReactComponent) {
@@ -38,17 +55,48 @@ module.exports = function polyfill(Component) {
 
   if (typeof Component.getDerivedStateFromProps === 'function') {
     if (typeof Component.prototype.componentWillMount === 'function') {
-      throw new Error('Cannot polyfill if componentWillMount already exists');
+      throw new Error(
+        'Cannot polyfill getDerivedStateFromProps() for components that define componentWillMount()'
+      );
     } else if (
       typeof Component.prototype.componentWillReceiveProps === 'function'
     ) {
       throw new Error(
-        'Cannot polyfill if componentWillReceiveProps already exists'
+        'Cannot polyfill getDerivedStateFromProps() for components that define componentWillReceiveProps()'
       );
     }
 
     Component.prototype.componentWillMount = componentWillMount;
     Component.prototype.componentWillReceiveProps = componentWillReceiveProps;
+  }
+
+  if (typeof Component.prototype.getSnapshotBeforeUpdate === 'function') {
+    if (typeof Component.prototype.componentWillUpdate === 'function') {
+      throw new Error(
+        'Cannot polyfill getSnapshotBeforeUpdate() for components that define componentWillUpdate()'
+      );
+    }
+    if (typeof Component.prototype.componentDidUpdate !== 'function') {
+      throw new Error(
+        'Cannot polyfill getSnapshotBeforeUpdate() for components that do not define componentDidUpdate() on the prototype'
+      );
+    }
+
+    Component.prototype.componentWillUpdate = componentWillUpdate;
+
+    var componentDidUpdate = Component.prototype.componentDidUpdate;
+
+    Component.prototype.componentDidUpdate = function componentDidUpdatePolyfill(
+      prevProps,
+      prevState
+    ) {
+      componentDidUpdate.call(
+        this,
+        prevProps,
+        prevState,
+        this.__reactInternalSnapshot
+      );
+    };
   }
 
   return Component;
