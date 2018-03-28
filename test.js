@@ -337,7 +337,7 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
           }
 
           expect(() => polyfill(Component)).toThrow(
-            'Cannot polyfill getSnapshotBeforeUpdate() for components that do not define componentDidUpdate()'
+            'Cannot polyfill getSnapshotBeforeUpdate() for components that do not define componentDidUpdate() on the prototype'
           );
         });
       });

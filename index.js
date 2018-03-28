@@ -78,7 +78,7 @@ module.exports = function polyfill(Component) {
     }
     if (typeof Component.prototype.componentDidUpdate !== 'function') {
       throw new Error(
-        'Cannot polyfill getSnapshotBeforeUpdate() for components that do not define componentDidUpdate()'
+        'Cannot polyfill getSnapshotBeforeUpdate() for components that do not define componentDidUpdate() on the prototype'
       );
     }
 
