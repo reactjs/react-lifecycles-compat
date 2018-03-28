@@ -119,6 +119,9 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
             constructor(props) {
               super(props);
               this.state = {count: 1};
+              this.setRef = ref => {
+                this.divRef = ref;
+              };
             }
             static getDerivedStateFromProps(nextProps, prevState) {
               return {
@@ -126,18 +129,26 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
               };
             }
             getSnapshotBeforeUpdate(prevProps, prevState) {
-              return prevState.count * 2 + this.state.count * 3;
+              expect(prevProps).toEqual({incrementBy: 2});
+              expect(prevState).toEqual({count: 3});
+              return this.divRef.textContent;
             }
             componentDidUpdate(prevProps, prevState, snapshot) {
               expect(prevProps).toEqual({incrementBy: 2});
               expect(prevState).toEqual({count: 3});
               expect(this.props).toEqual({incrementBy: 3});
               expect(this.state).toEqual({count: 6});
-              expect(snapshot).toBe(24);
+              expect(snapshot).toBe('3');
               componentDidUpdateCalled = true;
             }
             render() {
-              return React.createElement('div', null, this.state.count);
+              return React.createElement(
+                'div',
+                {
+                  ref: this.setRef,
+                },
+                this.state.count
+              );
             }
           }
 
