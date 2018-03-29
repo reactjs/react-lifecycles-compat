@@ -1,4 +1,8 @@
 module.exports = {
+  parserOptions: {
+    sourceType: 'module'
+  },
+
   extends: [
     'eslint-config-es5'
   ],

@@ -4,7 +4,7 @@ const {readdirSync} = require('fs');
 const {join} = require('path');
 
 const POLYFILLS = {
-  cjs: require('./index'),
+  cjs: require('.'),
   'umd: dev': require('./react-lifecycles-compat'),
   'umd: prod': require('./react-lifecycles-compat.min'),
 };
