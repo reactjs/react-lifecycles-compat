@@ -11,7 +11,7 @@
     "build": "npm run build:dev && npm run build:prod",
     "install:dependencies": "node install.js",
     "lint": "eslint index.js",
-    "prepublish": "npm test && npm run build",
+    "prepublish": "npm run build && npm test",
     "prettier": "prettier --write {index,test}.js"
   },
   "files": [
