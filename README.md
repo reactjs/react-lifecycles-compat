@@ -2,7 +2,7 @@
 
 ## What is this project?
 
-React version 17 will deprecate several of the class component API lifecycles: `componentWillMount`, `componentWillReceiveProps`, and `componentWillUpdate`. (Read the [Update on Async rendering blog post](https://deploy-preview-596--reactjs.netlify.com/blog/2018/03/15/update-on-async-rendering.html) to learn more about why.) A couple of new lifecycles are also being added to better support [async rendering mode](https://reactjs.org/blog/2018/03/01/sneak-peek-beyond-react-16.html).
+React version 17 will deprecate several of the class component API lifecycles: `componentWillMount`, `componentWillReceiveProps`, and `componentWillUpdate`. (Read the [Update on Async rendering blog post](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html) to learn more about why.) A couple of new lifecycles are also being added to better support [async rendering mode](https://reactjs.org/blog/2018/03/01/sneak-peek-beyond-react-16.html).
 
 Typically, this type of change would require third party libraries to release a new major version in order to adhere to semver. However, the `react-lifecycles-compat` polyfill offers a way to use the new lifecycles with older versions of React as well (0.14.9+) so no breaking release is required. This enables shared libraries to support both older and newer versions of React simultaneously.
 
@@ -17,7 +17,7 @@ yarn add react-lifecycles-compat
 npm install react-lifecycles-compat --save
 ```
 
-Next, update your component and replace any of the deprecated lifecycles with new ones introduced with React 16.3. (Refer to the React docs for [examples of how to use the new lifecycles](https://deploy-preview-596--reactjs.netlify.com/blog/2018/03/15/update-on-async-rendering.html).)
+Next, update your component and replace any of the deprecated lifecycles with new ones introduced with React 16.3. (Refer to the React docs for [examples of how to use the new lifecycles](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html).)
 
 Lastly, use the polyfill to make the new lifecycles work with older versions of React:
 ```js
@@ -36,7 +36,7 @@ export default ExampleComponent;
 
 ## Which lifecycles are supported?
 
-Currently, this polyfill supports [static `getDerivedStateFromProps`](https://deploy-preview-587--reactjs.netlify.com/docs/react-component.html#static-getderivedstatefromprops) and [`getSnapshotBeforeUpdate`](https://deploy-preview-587--reactjs.netlify.com/docs/react-component.html#getsnapshotbeforeupdate)- both introduced in version 16.3.
+Currently, this polyfill supports [static `getDerivedStateFromProps`](https://reactjs.org/docs/react-component.html#static-getderivedstatefromprops) and [`getSnapshotBeforeUpdate`](https://reactjs.org/docs/react-component.html#getsnapshotbeforeupdate)- both introduced in version 16.3.
 
 ## Validation
 
