@@ -1,6 +1,6 @@
 {
   "name": "react-lifecycles-compat",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Backwards compatibility polyfill for React class components",
   "main": "index.js",
   "license": "MIT",
