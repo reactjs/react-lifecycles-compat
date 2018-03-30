@@ -4,6 +4,7 @@
   "description": "Backwards compatibility polyfill for React class components",
   "main": "index.js",
   "license": "MIT",
+  "repository": "reactjs/react-lifecycles-compat",
   "scripts": {
     "test": "jest test.js",
     "build:dev": "NODE_ENV=development webpack",
