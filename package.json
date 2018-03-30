@@ -13,7 +13,8 @@
     "install:dependencies": "node install.js",
     "postinstall": "npm run install:dependencies",
     "lint": "eslint index.js",
-    "prepublish": "npm run build && npm test",
+    "prepublish": "npm test",
+    "pretest": "npm run build",
     "prettier": "prettier --write {index,test}.js"
   },
   "files": [
