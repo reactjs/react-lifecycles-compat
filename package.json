@@ -10,9 +10,8 @@
     "build": "rollup -c",
     "install:dependencies": "node install.js",
     "lint": "eslint index.js",
-    "postinstall": "npm run install:dependencies",
     "prepublish": "npm test",
-    "pretest": "npm run build",
+    "pretest": "npm run install:dependencies && npm run build",
     "prettier": "prettier --write {index,test}.js",
     "test": "jest test.js"
   },
