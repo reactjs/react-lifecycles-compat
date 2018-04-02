@@ -24,7 +24,7 @@ export default [
   createConfig({
     output: [
       { file: pkg.main, format: 'cjs' },
-      { file: pkg.module, format: 'es' },
+      // Re-enable for 2.0 { file: pkg.module, format: 'es' },
     ],
   }),
   createConfig({
