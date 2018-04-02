@@ -2,34 +2,37 @@
   "name": "react-lifecycles-compat",
   "version": "1.1.0",
   "description": "Backwards compatibility polyfill for React class components",
-  "main": "index.js",
+  "main": "react-lifecycles-compat.cjs.js",
+  "module": "react-lifecycles-compat.es.js",
   "license": "MIT",
   "repository": "reactjs/react-lifecycles-compat",
   "scripts": {
-    "test": "jest test.js",
-    "build:dev": "NODE_ENV=development webpack",
-    "build:prod": "NODE_ENV=production webpack",
-    "build": "npm run build:dev && npm run build:prod",
+    "build": "rollup -c",
     "install:dependencies": "node install.js",
-    "postinstall": "npm run install:dependencies",
     "lint": "eslint index.js",
+    "postinstall": "npm run install:dependencies",
     "prepublish": "npm test",
     "pretest": "npm run build",
-    "prettier": "prettier --write {index,test}.js"
+    "prettier": "prettier --write {index,test}.js",
+    "test": "jest test.js"
   },
   "files": [
-    "index.js",
+    "react-lifecycles-compat.cjs.js",
+    "react-lifecycles-compat.es.js",
     "react-lifecycles-compat.js",
     "react-lifecycles-compat.min.js"
   ],
   "devDependencies": {
+    "camelcase": "^5.0.0",
     "chalk": "^2.3.0",
     "eslint": "^4.16.0",
     "eslint-config-es5": "^0.5.0",
     "jest": "^22.1.4",
     "jest-cli": "^22.1.4",
     "prettier": "^1.10.2",
-    "webpack": "^2"
+    "rollup": "^0.57.1",
+    "rollup-plugin-replace": "^2.0.0",
+    "rollup-plugin-uglify": "^3.0.0"
   },
   "devEngines": {
     "node": "8.5 || 9.x"

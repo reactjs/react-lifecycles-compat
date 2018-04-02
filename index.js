@@ -5,8 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-'use strict';
-
 // Older versions of React do not support static getDerivedStateFromProps.
 // As a workaround, use cWM and cWRP to invoke the new static lifecycle.
 // Newer versions of React will ignore these methods if gDSFP exists.
@@ -48,7 +46,7 @@ componentWillMount.__suppressDeprecationWarning = true;
 componentWillReceiveProps.__suppressDeprecationWarning = true;
 componentWillUpdate.__suppressDeprecationWarning = true;
 
-module.exports = function polyfill(Component) {
+export default function polyfill(Component) {
   if (!Component.prototype || !Component.prototype.isReactComponent) {
     throw new Error('Can only polyfill class components');
   }
@@ -100,4 +98,4 @@ module.exports = function polyfill(Component) {
   }
 
   return Component;
-};
+}
