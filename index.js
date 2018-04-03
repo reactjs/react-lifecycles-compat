@@ -86,14 +86,14 @@ export default function polyfill(Component) {
 
     Component.prototype.componentDidUpdate = function componentDidUpdatePolyfill(
       prevProps,
-      prevState
+      prevState,
+      maybeSnapshot
     ) {
-      componentDidUpdate.call(
-        this,
-        prevProps,
-        prevState,
-        this.__reactInternalSnapshot
-      );
+      // 16.3+ will pass a snapshot value.
+      // Older versions will rely on our polyfilled value.
+      var snapshot = this.__reactInternalSnapshot || maybeSnapshot;
+
+      componentDidUpdate.call(this, prevProps, prevState, snapshot);
     };
   }
 
