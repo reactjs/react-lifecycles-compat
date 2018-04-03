@@ -9,17 +9,19 @@ const POLYFILLS = {
   'umd: prod': require('./react-lifecycles-compat.min'),
 };
 
-Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
+Object.entries(POLYFILLS).forEach(([name, module]) => {
   describe(`react-lifecycles-compat (${name})`, () => {
     readdirSync(join(__dirname, 'react')).forEach(version => {
       const basePath = `./react/${version}/node_modules/`;
 
       let createReactClass;
+      let polyfill;
       let React;
       let ReactDOM;
 
       beforeEach(() => {
         createReactClass = require(basePath + 'create-react-class');
+        polyfill = module.polyfill;
         React = require(basePath + 'react');
         ReactDOM = require(basePath + 'react-dom');
       });
