@@ -293,6 +293,56 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
           }
         });
 
+        it('should properly handle falsy return values from getSnapshotBeforeUpdate()', () => {
+          let componentDidUpdateCalls = 0;
+
+          class Component extends React.Component {
+            getSnapshotBeforeUpdate(prevProps) {
+              return prevProps.value;
+            }
+            componentDidUpdate(prevProps, prevState, snapshot) {
+              expect(snapshot).toBe(prevProps.value);
+              componentDidUpdateCalls++;
+            }
+            render() {
+              return null;
+            }
+          }
+
+          polyfill(Component);
+
+          const container = document.createElement('div');
+          ReactDOM.render(
+            React.createElement(Component, {value: 'initial'}),
+            container
+          );
+          expect(componentDidUpdateCalls).toBe(0);
+
+          ReactDOM.render(
+            React.createElement(Component, {value: null}),
+            container
+          );
+          expect(componentDidUpdateCalls).toBe(1);
+
+          ReactDOM.render(
+            React.createElement(Component, {value: false}),
+            container
+          );
+          expect(componentDidUpdateCalls).toBe(2);
+
+          ReactDOM.render(
+            React.createElement(Component, {value: undefined}),
+            container
+          );
+          expect(componentDidUpdateCalls).toBe(3);
+
+          ReactDOM.render(
+            React.createElement(Component, {value: 123}),
+            container
+          );
+          expect(componentDidUpdateCalls).toBe(4);
+        });
+
         it('should error for non-class components', () => {
           function FunctionalComponent() {
             return null;
