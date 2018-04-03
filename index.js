@@ -91,6 +91,8 @@ export default function polyfill(Component) {
     ) {
       // 16.3+ will pass a snapshot value.
       // Older versions will rely on our polyfilled value.
+      // It's important to check for the "__reactInternalSnapshot" value first though,
+      // Since <= 15.x versions of React will pass a prevContext param to componentDidUpdate.
       var snapshot = this.__reactInternalSnapshot || maybeSnapshot;
 
       componentDidUpdate.call(this, prevProps, prevState, snapshot);
