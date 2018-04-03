@@ -90,11 +90,13 @@ export function polyfill(Component) {
       prevState,
       maybeSnapshot
     ) {
-      // 16.3+ will not execute our will-update method, but will still pass a snapshot value to did-update.
-      // Older versions will rely on our polyfilled will-update behavior.
-      // We can't just check for the presence of "maybeSnapshot",
+      // 16.3+ will not execute our will-update method;
+      // It will pass a snapshot value to did-update though.
+      // Older versions will require our polyfilled will-update value.
+      // We need to handle both cases, but can't just check for the presence of "maybeSnapshot",
       // Because for <= 15.x versions this might be a "prevContext" object.
-      // We should also guard against falsy snapshot return values,
+      // We also can't just check "__reactInternalSnapshot",
+      // Because get-snapshot might return a falsy value.
       // So check for the explicit __reactInternalSnapshotFlag flag to determine behavior.
       var snapshot = this.__reactInternalSnapshotFlag
         ? this.__reactInternalSnapshot
