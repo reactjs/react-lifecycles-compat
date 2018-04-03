@@ -19,7 +19,7 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
       let React;
       let ReactDOM;
 
-      beforeEach(() => {
+      beforeAll(() => {
         createReactClass = require(basePath + 'create-react-class');
         polyfill = module.polyfill;
         React = require(basePath + 'react');
