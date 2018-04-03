@@ -14,9 +14,15 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
     readdirSync(join(__dirname, 'react')).forEach(version => {
       const basePath = `./react/${version}/node_modules/`;
 
-      const createReactClass = require(basePath + 'create-react-class');
-      const React = require(basePath + 'react');
-      const ReactDOM = require(basePath + 'react-dom');
+      let createReactClass;
+      let React;
+      let ReactDOM;
+
+      beforeEach(() => {
+        createReactClass = require(basePath + 'create-react-class');
+        React = require(basePath + 'react');
+        ReactDOM = require(basePath + 'react-dom');
+      });
 
       describe(`react@${version}`, () => {
         beforeAll(() => {
@@ -274,8 +280,15 @@ Object.entries(POLYFILLS).forEach(([name, polyfill]) => {
           } catch (error) {}
 
           // Verify that props and state get reset after the error
-          expect(instance.props.incrementBy).toBe(2);
-          expect(instance.state.count).toBe(3);
+          // Note that the polyfilled and real versions necessarily differ,
+          // Because one is run during the "render" phase and the other during "commit".
+          if (parseFloat(version) < '16.3') {
+            expect(instance.props.incrementBy).toBe(2);
+            expect(instance.state.count).toBe(3);
+          } else {
+            expect(instance.props.incrementBy).toBe(3);
+            expect(instance.state.count).toBe(6);
+          }
         });
 
         it('should error for non-class components', () => {
