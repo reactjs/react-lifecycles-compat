@@ -30,6 +30,7 @@ function componentWillUpdate(nextProps, nextState) {
     var prevState = this.state;
     this.props = nextProps;
     this.state = nextState;
+    this.__reactInternalSnapshotFlag = true;
     this.__reactInternalSnapshot = this.getSnapshotBeforeUpdate(
       prevProps,
       prevState
@@ -89,11 +90,17 @@ export default function polyfill(Component) {
       prevState,
       maybeSnapshot
     ) {
-      // 16.3+ will pass a snapshot value.
-      // Older versions will rely on our polyfilled value.
-      // It's important to check for the "__reactInternalSnapshot" value first though,
-      // Since <= 15.x versions of React will pass a prevContext param to componentDidUpdate.
-      var snapshot = this.__reactInternalSnapshot || maybeSnapshot;
+      // 16.3+ will not execute our will-update method;
+      // It will pass a snapshot value to did-update though.
+      // Older versions will require our polyfilled will-update value.
+      // We need to handle both cases, but can't just check for the presence of "maybeSnapshot",
+      // Because for <= 15.x versions this might be a "prevContext" object.
+      // We also can't just check "__reactInternalSnapshot",
+      // Because get-snapshot might return a falsy value.
+      // So check for the explicit __reactInternalSnapshotFlag flag to determine behavior.
+      var snapshot = this.__reactInternalSnapshotFlag
+        ? this.__reactInternalSnapshot
+        : maybeSnapshot;
 
       componentDidUpdate.call(this, prevProps, prevState, snapshot);
     };
