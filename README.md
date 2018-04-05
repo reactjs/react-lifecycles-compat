@@ -22,7 +22,7 @@ Next, update your component and replace any of the deprecated lifecycles with ne
 Lastly, use the polyfill to make the new lifecycles work with older versions of React:
 ```js
 import React from 'react';
-import polyfill from 'react-lifecycles-compat';
+import {polyfill} from 'react-lifecycles-compat';
 
 class ExampleComponent extends React.Component {
   // ...

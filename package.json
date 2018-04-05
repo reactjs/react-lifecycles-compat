@@ -1,8 +1,9 @@
 {
   "name": "react-lifecycles-compat",
-  "version": "1.1.3",
+  "version": "2.0.0",
   "description": "Backwards compatibility polyfill for React class components",
   "main": "react-lifecycles-compat.cjs.js",
+  "module": "react-lifecycles-compat.es.js",
   "license": "MIT",
   "repository": "reactjs/react-lifecycles-compat",
   "scripts": {
@@ -16,6 +17,7 @@
   },
   "files": [
     "react-lifecycles-compat.cjs.js",
+    "react-lifecycles-compat.es.js",
     "react-lifecycles-compat.js",
     "react-lifecycles-compat.min.js"
   ],

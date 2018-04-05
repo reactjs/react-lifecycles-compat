@@ -47,7 +47,7 @@ componentWillMount.__suppressDeprecationWarning = true;
 componentWillReceiveProps.__suppressDeprecationWarning = true;
 componentWillUpdate.__suppressDeprecationWarning = true;
 
-export default function polyfill(Component) {
+export function polyfill(Component) {
   if (!Component.prototype || !Component.prototype.isReactComponent) {
     throw new Error('Can only polyfill class components');
   }
