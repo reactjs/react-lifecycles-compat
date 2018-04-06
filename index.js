@@ -54,80 +54,63 @@ export function polyfill(Component) {
     throw new Error('Can only polyfill class components');
   }
 
-  if (process.env.NODE_ENV !== 'production') {
-    if (
-      typeof Component.getDerivedStateFromProps === 'function' ||
-      typeof prototype.getSnapshotBeforeUpdate === 'function'
-    ) {
-      // If new component APIs are defined, "unsafe" lifecycles won't be called.
-      // Error if any of these lifecycles are present, because they will not work.
-      let foundWillMountName = null;
-      let foundWillReceivePropsName = null;
-      let foundWillUpdateName = null;
-      if (typeof prototype.componentWillMount === 'function') {
-        foundWillMountName = 'componentWillMount';
-      } else if (typeof prototype.UNSAFE_componentWillMount === 'function') {
-        foundWillMountName = 'UNSAFE_componentWillMount';
-      }
-      if (typeof prototype.componentWillReceiveProps === 'function') {
-        foundWillReceivePropsName = 'componentWillReceiveProps';
-      } else if (
-        typeof prototype.UNSAFE_componentWillReceiveProps === 'function'
-      ) {
-        foundWillReceivePropsName = 'UNSAFE_componentWillReceiveProps';
-      }
-      if (typeof prototype.componentWillUpdate === 'function') {
-        foundWillUpdateName = 'componentWillUpdate';
-      } else if (typeof prototype.UNSAFE_componentWillUpdate === 'function') {
-        foundWillUpdateName = 'UNSAFE_componentWillUpdate';
-      }
-      if (
-        foundWillMountName !== null ||
-        foundWillReceivePropsName !== null ||
-        foundWillUpdateName !== null
-      ) {
-        var componentName = Component.displayName || Component.name;
-        var newApiName =
-          typeof Component.getDerivedStateFromProps === 'function'
-            ? 'getDerivedStateFromProps()'
-            : 'getSnapshotBeforeUpdate()';
+  if (
+    typeof Component.getDerivedStateFromProps !== 'function' &&
+    typeof prototype.getSnapshotBeforeUpdate !== 'function'
+  ) {
+    return Component;
+  }
 
-        console.error(
-          'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
-            `${componentName} uses ${newApiName} but also contains the following legacy lifecycles:` +
-            (foundWillMountName !== null ? `\n  ${foundWillMountName}` : '') +
-            (foundWillReceivePropsName !== null
-              ? `\n  ${foundWillReceivePropsName}`
-              : '') +
-            (foundWillUpdateName !== null ? `\n  ${foundWillUpdateName}` : '') +
-            '\n\nThe above lifecycles should be removed. Learn more about this warning here:\n' +
-            'https://fb.me/react-async-component-lifecycle-hooks'
-        );
-      }
-    }
+  // If new component APIs are defined, "unsafe" lifecycles won't be called.
+  // Error if any of these lifecycles are present, because they will not work.
+  let foundWillMountName = null;
+  let foundWillReceivePropsName = null;
+  let foundWillUpdateName = null;
+  if (typeof prototype.componentWillMount === 'function') {
+    foundWillMountName = 'componentWillMount';
+  } else if (typeof prototype.UNSAFE_componentWillMount === 'function') {
+    foundWillMountName = 'UNSAFE_componentWillMount';
+  }
+  if (typeof prototype.componentWillReceiveProps === 'function') {
+    foundWillReceivePropsName = 'componentWillReceiveProps';
+  } else if (typeof prototype.UNSAFE_componentWillReceiveProps === 'function') {
+    foundWillReceivePropsName = 'UNSAFE_componentWillReceiveProps';
+  }
+  if (typeof prototype.componentWillUpdate === 'function') {
+    foundWillUpdateName = 'componentWillUpdate';
+  } else if (typeof prototype.UNSAFE_componentWillUpdate === 'function') {
+    foundWillUpdateName = 'UNSAFE_componentWillUpdate';
+  }
+  if (
+    foundWillMountName !== null ||
+    foundWillReceivePropsName !== null ||
+    foundWillUpdateName !== null
+  ) {
+    var componentName = Component.displayName || Component.name;
+    var newApiName =
+      typeof Component.getDerivedStateFromProps === 'function'
+        ? 'getDerivedStateFromProps()'
+        : 'getSnapshotBeforeUpdate()';
+
+    throw Error(
+      'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
+        `${componentName} uses ${newApiName} but also contains the following legacy lifecycles:` +
+        (foundWillMountName !== null ? `\n  ${foundWillMountName}` : '') +
+        (foundWillReceivePropsName !== null
+          ? `\n  ${foundWillReceivePropsName}`
+          : '') +
+        (foundWillUpdateName !== null ? `\n  ${foundWillUpdateName}` : '') +
+        '\n\nThe above lifecycles should be removed. Learn more about this warning here:\n' +
+        'https://fb.me/react-async-component-lifecycle-hooks'
+    );
   }
 
   if (typeof Component.getDerivedStateFromProps === 'function') {
-    if (typeof prototype.componentWillMount === 'function') {
-      throw new Error(
-        'Cannot polyfill getDerivedStateFromProps() for components that define componentWillMount()'
-      );
-    } else if (typeof prototype.componentWillReceiveProps === 'function') {
-      throw new Error(
-        'Cannot polyfill getDerivedStateFromProps() for components that define componentWillReceiveProps()'
-      );
-    }
-
     prototype.componentWillMount = componentWillMount;
     prototype.componentWillReceiveProps = componentWillReceiveProps;
   }
 
   if (typeof prototype.getSnapshotBeforeUpdate === 'function') {
-    if (typeof prototype.componentWillUpdate === 'function') {
-      throw new Error(
-        'Cannot polyfill getSnapshotBeforeUpdate() for components that define componentWillUpdate()'
-      );
-    }
     if (typeof prototype.componentDidUpdate !== 'function') {
       throw new Error(
         'Cannot polyfill getSnapshotBeforeUpdate() for components that do not define componentDidUpdate() on the prototype'

@@ -4,7 +4,7 @@ const {readdirSync} = require('fs');
 const {join} = require('path');
 
 const POLYFILLS = {
-  cjs: require('.'),
+  cjs: require('./react-lifecycles-compat.cjs'),
   'umd: dev': require('./react-lifecycles-compat'),
   'umd: prod': require('./react-lifecycles-compat.min'),
 };
@@ -353,10 +353,11 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
           );
         });
 
-        it('should ignore component with cWM or cWRP lifecycles if they do not define static gDSFP', () => {
+        it('should ignore components with old lifecycles if they do not define new ones', () => {
           class ComponentWithLifecycles extends React.Component {
             componentWillMount() {}
             componentWillReceiveProps() {}
+            componentWillUpdate() {}
             render() {
               return null;
             }
@@ -365,7 +366,7 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
           polyfill(ComponentWithLifecycles);
         });
 
-        it('should error if component defines gDSFP but already has cWM or cWRP', () => {
+        it('should error if component tries to combine gDSFP with any of the old API lifecycles', () => {
           class ComponentWithWillMount extends React.Component {
             componentWillMount() {}
             static getDerivedStateFromProps() {}
@@ -373,6 +374,12 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
               return null;
             }
           }
+
+          expect(() => polyfill(ComponentWithWillMount)).toThrow(
+            'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
+              'ComponentWithWillMount uses getDerivedStateFromProps() but also contains the following legacy lifecycles:\n' +
+              '  componentWillMount'
+          );
 
           class ComponentWithWillReceiveProps extends React.Component {
             componentWillReceiveProps() {}
@@ -382,15 +389,56 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
             }
           }
 
-          expect(() => polyfill(ComponentWithWillMount)).toThrow(
-            'Cannot polyfill getDerivedStateFromProps() for components that define componentWillMount()'
-          );
           expect(() => polyfill(ComponentWithWillReceiveProps)).toThrow(
-            'Cannot polyfill getDerivedStateFromProps() for components that define componentWillReceiveProps()'
+            'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
+              'ComponentWithWillReceiveProps uses getDerivedStateFromProps() but also contains the following legacy lifecycles:\n' +
+              '  componentWillReceiveProps'
+          );
+
+          class ComponentWithWillUpdate extends React.Component {
+            componentWillUpdate() {}
+            static getDerivedStateFromProps() {}
+            render() {
+              return null;
+            }
+          }
+
+          expect(() => polyfill(ComponentWithWillUpdate)).toThrow(
+            'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
+              'ComponentWithWillUpdate uses getDerivedStateFromProps() but also contains the following legacy lifecycles:\n' +
+              '  componentWillUpdate'
           );
         });
 
-        it('should error if component defines gSBU but already has cWU', () => {
+        it('should error if component tries to combine gSBU with any of the old API lifecycles', () => {
+          class ComponentWithWillMount extends React.Component {
+            componentWillMount() {}
+            getSnapshotBeforeUpdate() {}
+            render() {
+              return null;
+            }
+          }
+
+          expect(() => polyfill(ComponentWithWillMount)).toThrow(
+            'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
+              'ComponentWithWillMount uses getSnapshotBeforeUpdate() but also contains the following legacy lifecycles:\n' +
+              '  componentWillMount'
+          );
+
+          class ComponentWithWillReceiveProps extends React.Component {
+            componentWillReceiveProps() {}
+            getSnapshotBeforeUpdate() {}
+            render() {
+              return null;
+            }
+          }
+
+          expect(() => polyfill(ComponentWithWillReceiveProps)).toThrow(
+            'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
+              'ComponentWithWillReceiveProps uses getSnapshotBeforeUpdate() but also contains the following legacy lifecycles:\n' +
+              '  componentWillReceiveProps'
+          );
+
           class ComponentWithWillUpdate extends React.Component {
             componentWillUpdate() {}
             getSnapshotBeforeUpdate() {}
@@ -400,7 +448,9 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
           }
 
           expect(() => polyfill(ComponentWithWillUpdate)).toThrow(
-            'Cannot polyfill getSnapshotBeforeUpdate() for components that define componentWillUpdate()'
+            'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
+              'ComponentWithWillUpdate uses getSnapshotBeforeUpdate() but also contains the following legacy lifecycles:\n' +
+              '  componentWillUpdate'
           );
         });
 
