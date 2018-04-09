@@ -62,7 +62,8 @@ export function polyfill(Component) {
   }
 
   // If new component APIs are defined, "unsafe" lifecycles won't be called.
-  // Error if any of these lifecycles are present, because they will not work.
+  // Error if any of these lifecycles are present,
+  // Because they would work differently between older and newer (16.3+) versions of React.
   let foundWillMountName = null;
   let foundWillReceivePropsName = null;
   let foundWillUpdateName = null;
