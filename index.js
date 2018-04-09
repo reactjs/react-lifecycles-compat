@@ -5,9 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// Older versions of React do not support static getDerivedStateFromProps.
-// As a workaround, use cWM and cWRP to invoke the new static lifecycle.
-// Newer versions of React will ignore these methods if gDSFP exists.
 function componentWillMount() {
   // Call this.constructor.gDSFP to support sub-classes.
   var state = this.constructor.getDerivedStateFromProps(this.props, this.state);
@@ -106,11 +103,17 @@ export function polyfill(Component) {
     );
   }
 
+  // React <= 16.2 does not support static getDerivedStateFromProps.
+  // As a workaround, use cWM and cWRP to invoke the new static lifecycle.
+  // Newer versions of React will ignore these lifecycles if gDSFP exists.
   if (typeof Component.getDerivedStateFromProps === 'function') {
     prototype.componentWillMount = componentWillMount;
     prototype.componentWillReceiveProps = componentWillReceiveProps;
   }
 
+  // React <= 16.2 does not support getSnapshotBeforeUpdate.
+  // As a workaround, use cWU to invoke the new lifecycle.
+  // Newer versions of React will ignore that lifecycle if gSBU exists.
   if (typeof prototype.getSnapshotBeforeUpdate === 'function') {
     if (typeof prototype.componentDidUpdate !== 'function') {
       throw new Error(
