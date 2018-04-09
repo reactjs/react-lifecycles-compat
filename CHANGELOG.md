@@ -12,7 +12,7 @@ Throw an error for any polyfilled component that mixes old lifecycles (`componen
 
 ## 2.0.1 (April 9, 2018)
 
-Add a DEV mode warning for any polyfilled component that mixes old lifecycles (`componentWillMount`, `componentWillReceiveProps`, or `componentWillUpdate`) and new lifecycles (`getDerivedStateFromProps` or `getSnapshotBeforeUpdate`) as React 16.3+ does not support this case and will not invoke the old lifecycles. This error ensures consistent behavior between React 16.3+ and older versions. ([#15](https://github.com/reactjs/react-lifecycles-compat/pull/15))
+Add a DEV mode warning for any polyfilled component that mixes old lifecycles (`componentWillMount`, `componentWillReceiveProps`, or `componentWillUpdate`) and new lifecycles (`getDerivedStateFromProps` or `getSnapshotBeforeUpdate`) as React 16.3+ does not support this case and will not invoke the old lifecycles. This warning ensures consistent behavior between React 16.3+ and older versions. ([#15](https://github.com/reactjs/react-lifecycles-compat/pull/15))
 
 ## 2.0.0 (April 4, 2018)
 
