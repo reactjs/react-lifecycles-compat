@@ -364,6 +364,17 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
           }
 
           polyfill(ComponentWithLifecycles);
+
+          class ComponentWithUnsafeLifecycles extends React.Component {
+            UNSAFE_componentWillMount() {}
+            UNSAFE_componentWillReceiveProps() {}
+            UNSAFE_componentWillUpdate() {}
+            render() {
+              return null;
+            }
+          }
+
+          polyfill(ComponentWithUnsafeLifecycles);
         });
 
         it('should error if component tries to combine gDSFP with any of the old API lifecycles', () => {
@@ -408,6 +419,48 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
               'ComponentWithWillUpdate uses getDerivedStateFromProps() but also contains the following legacy lifecycles:\n' +
               '  componentWillUpdate'
           );
+
+          class ComponentWithUnsafeWillMount extends React.Component {
+            UNSAFE_componentWillMount() {}
+            static getDerivedStateFromProps() {}
+            render() {
+              return null;
+            }
+          }
+
+          expect(() => polyfill(ComponentWithUnsafeWillMount)).toThrow(
+            'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
+              'ComponentWithUnsafeWillMount uses getDerivedStateFromProps() but also contains the following legacy lifecycles:\n' +
+              '  UNSAFE_componentWillMount'
+          );
+
+          class ComponentWithUnsafeWillReceiveProps extends React.Component {
+            UNSAFE_componentWillReceiveProps() {}
+            static getDerivedStateFromProps() {}
+            render() {
+              return null;
+            }
+          }
+
+          expect(() => polyfill(ComponentWithUnsafeWillReceiveProps)).toThrow(
+            'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
+              'ComponentWithUnsafeWillReceiveProps uses getDerivedStateFromProps() but also contains the following legacy lifecycles:\n' +
+              '  UNSAFE_componentWillReceiveProps'
+          );
+
+          class ComponentWithUnsafeWillUpdate extends React.Component {
+            UNSAFE_componentWillUpdate() {}
+            static getDerivedStateFromProps() {}
+            render() {
+              return null;
+            }
+          }
+
+          expect(() => polyfill(ComponentWithUnsafeWillUpdate)).toThrow(
+            'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
+              'ComponentWithUnsafeWillUpdate uses getDerivedStateFromProps() but also contains the following legacy lifecycles:\n' +
+              '  UNSAFE_componentWillUpdate'
+          );
         });
 
         it('should error if component tries to combine gSBU with any of the old API lifecycles', () => {
@@ -451,6 +504,48 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
             'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
               'ComponentWithWillUpdate uses getSnapshotBeforeUpdate() but also contains the following legacy lifecycles:\n' +
               '  componentWillUpdate'
+          );
+
+          class ComponentWithUnsafeWillMount extends React.Component {
+            UNSAFE_componentWillMount() {}
+            getSnapshotBeforeUpdate() {}
+            render() {
+              return null;
+            }
+          }
+
+          expect(() => polyfill(ComponentWithUnsafeWillMount)).toThrow(
+            'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
+              'ComponentWithUnsafeWillMount uses getSnapshotBeforeUpdate() but also contains the following legacy lifecycles:\n' +
+              '  UNSAFE_componentWillMount'
+          );
+
+          class ComponentWithUnsafeWillReceiveProps extends React.Component {
+            UNSAFE_componentWillReceiveProps() {}
+            getSnapshotBeforeUpdate() {}
+            render() {
+              return null;
+            }
+          }
+
+          expect(() => polyfill(ComponentWithUnsafeWillReceiveProps)).toThrow(
+            'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
+              'ComponentWithUnsafeWillReceiveProps uses getSnapshotBeforeUpdate() but also contains the following legacy lifecycles:\n' +
+              '  UNSAFE_componentWillReceiveProps'
+          );
+
+          class ComponentWithUnsafeWillUpdate extends React.Component {
+            UNSAFE_componentWillUpdate() {}
+            getSnapshotBeforeUpdate() {}
+            render() {
+              return null;
+            }
+          }
+
+          expect(() => polyfill(ComponentWithUnsafeWillUpdate)).toThrow(
+            'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
+              'ComponentWithUnsafeWillUpdate uses getSnapshotBeforeUpdate() but also contains the following legacy lifecycles:\n' +
+              '  UNSAFE_componentWillUpdate'
           );
         });
 
