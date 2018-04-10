@@ -6,6 +6,10 @@
   </summary>
 </details>
 
+## 3.0.1 (April 10, 2018)
+
+Replaced a few unintentional `let` keywords with `var` to ensure broader browser compatibility. ([#17](https://github.com/reactjs/react-lifecycles-compat/pull/17))
+
 ## 3.0.0 (April 9, 2018)
 
 Throw an error for any polyfilled component that mixes old lifecycles (`componentWillMount`, `componentWillReceiveProps`, or `componentWillUpdate`) and new lifecycles (`getDerivedStateFromProps` or `getSnapshotBeforeUpdate`) as React 16.3+ does not support this case and will not invoke the old lifecycles. This error ensures consistent behavior between React 16.3+ and older versions. ([#14](https://github.com/reactjs/react-lifecycles-compat/pull/14))
