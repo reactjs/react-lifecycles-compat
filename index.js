@@ -92,12 +92,15 @@ export function polyfill(Component) {
 
     throw Error(
       'Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n' +
-        `${componentName} uses ${newApiName} but also contains the following legacy lifecycles:` +
-        (foundWillMountName !== null ? `\n  ${foundWillMountName}` : '') +
+        componentName +
+        ' uses ' +
+        newApiName +
+        ' but also contains the following legacy lifecycles:' +
+        (foundWillMountName !== null ? '\n  ' + foundWillMountName : '') +
         (foundWillReceivePropsName !== null
-          ? `\n  ${foundWillReceivePropsName}`
+          ? '\n  ' + foundWillReceivePropsName
           : '') +
-        (foundWillUpdateName !== null ? `\n  ${foundWillUpdateName}` : '') +
+        (foundWillUpdateName !== null ? '\n  ' + foundWillUpdateName : '') +
         '\n\nThe above lifecycles should be removed. Learn more about this warning here:\n' +
         'https://fb.me/react-async-component-lifecycle-hooks'
     );
