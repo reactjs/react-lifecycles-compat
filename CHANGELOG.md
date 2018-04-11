@@ -6,6 +6,10 @@
   </summary>
 </details>
 
+## 3.0.2 (April 11, 2018)
+
+Replaced an unintentional template literal to ensure broader browser compatibility. ([ce42fe4](https://github.com/reactjs/react-lifecycles-compat/commit/ce42fe426e6348fd221bb4fd1905e392ceb823a9))
+
 ## 3.0.1 (April 10, 2018)
 
 Replaced a few unintentional `let` keywords with `var` to ensure broader browser compatibility. ([#17](https://github.com/reactjs/react-lifecycles-compat/pull/17))

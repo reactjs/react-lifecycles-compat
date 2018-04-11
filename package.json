@@ -1,6 +1,6 @@
 {
   "name": "react-lifecycles-compat",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Backwards compatibility polyfill for React class components",
   "main": "react-lifecycles-compat.cjs.js",
   "module": "react-lifecycles-compat.es.js",
