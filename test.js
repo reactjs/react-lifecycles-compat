@@ -562,7 +562,7 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
           );
         });
 
-        it('should not pass stale state to a setState updater function when parent component also re-renders', () => {
+        it('should not pass stale state to a setState updater function when parent component also re-renders as part of a batched update', () => {
           class ParentComponent extends React.Component {
             constructor(props) {
               super(props);
