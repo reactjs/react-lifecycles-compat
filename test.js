@@ -561,6 +561,63 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
             'Cannot polyfill getSnapshotBeforeUpdate() for components that do not define componentDidUpdate() on the prototype'
           );
         });
+
+        it('should not pass stale state to a setState updater function when parent component also re-renders', () => {
+          class ParentComponent extends React.Component {
+            constructor(props) {
+              super(props);
+              this.state = {};
+              this.updateState = this.updateState.bind(this);
+            }
+            updateState() {
+              this.setState({});
+            }
+            render() {
+              return React.createElement(PolyfilledComponent, {
+                parentCallback: this.updateState,
+              });
+            }
+          }
+
+          let instance;
+          class PolyfilledComponent extends React.Component {
+            constructor(props) {
+              super(props);
+              this.state = {flag: true};
+              this.handleClick = this.handleClick.bind(this);
+            }
+            static getDerivedStateFromProps(nextProps, prevState) {
+              return prevState;
+            }
+            handleClick() {
+              this.setState(function(prevState) {
+                return {flag: !prevState.flag};
+              });
+              this.props.parentCallback();
+            }
+            render() {
+              instance = this;
+              return React.createElement(
+                'button',
+                {id: 'button', onClick: this.handleClick},
+                String(this.state.flag)
+              );
+            }
+          }
+
+          polyfill(PolyfilledComponent);
+
+          const container = document.createElement('div');
+          ReactDOM.render(React.createElement(ParentComponent), container);
+
+          const button = container.firstChild;
+
+          expect(container.textContent).toBe('true');
+          ReactDOM.unstable_batchedUpdates(instance.handleClick); // Simulate click
+          expect(container.textContent).toBe('false');
+          ReactDOM.unstable_batchedUpdates(instance.handleClick); // Simulate click
+          expect(container.textContent).toBe('true');
+        });
       });
     });
   });
