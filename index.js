@@ -15,10 +15,9 @@ function componentWillMount() {
 
 function componentWillReceiveProps(nextProps) {
   // Call this.constructor.gDSFP to support sub-classes.
-  var state = this.constructor.getDerivedStateFromProps(nextProps, this.state);
-  if (state !== null && state !== undefined) {
-    this.setState(state);
-  }
+  this.setState(function updater(prevState) {
+    return this.constructor.getDerivedStateFromProps(nextProps, prevState) || {};
+  });
 }
 
 function componentWillUpdate(nextProps, nextState) {
