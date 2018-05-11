@@ -18,7 +18,7 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
       let polyfill;
       let React;
       let ReactDOM;
-      let testRenderer;
+      let ReactTestRenderer;
 
       beforeAll(() => {
         createReactClass = require(basePath + 'create-react-class');
@@ -26,13 +26,11 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
         React = require(basePath + 'react');
         ReactDOM = require(basePath + 'react-dom');
 
-        let ReactTestRenderer;
         try {
           ReactTestRenderer = require(basePath + 'react-test-renderer/shallow');
-        } catch(e) {
+        } catch (e) {
           ReactTestRenderer = require(basePath + 'react-addons-test-utils');
         }
-        testRenderer = ReactTestRenderer.createRenderer();
       });
 
       describe(`react@${version}`, () => {
@@ -97,6 +95,7 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
 
           polyfill(ClassComponent);
 
+          const testRenderer = ReactTestRenderer.createRenderer();
           testRenderer.render(
             React.createElement(ClassComponent, {incrementBy: 2})
           );

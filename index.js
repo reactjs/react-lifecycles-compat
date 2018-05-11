@@ -20,6 +20,7 @@ function componentWillReceiveProps(nextProps) {
     var state = this.constructor.getDerivedStateFromProps(nextProps, prevState);
     return state !== null && state !== undefined ? state : null;
   }
+  // Binding "this" is important for shallow renderer support.
   this.setState(updater.bind(this));
 }
 
