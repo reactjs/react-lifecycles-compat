@@ -18,12 +18,21 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
       let polyfill;
       let React;
       let ReactDOM;
+      let testRenderer;
 
       beforeAll(() => {
         createReactClass = require(basePath + 'create-react-class');
         polyfill = module.polyfill;
         React = require(basePath + 'react');
         ReactDOM = require(basePath + 'react-dom');
+
+        let ReactTestRenderer;
+        try {
+          ReactTestRenderer = require(basePath + 'react-test-renderer/shallow');
+        } catch(e) {
+          ReactTestRenderer = require(basePath + 'react-addons-test-utils');
+        }
+        testRenderer = ReactTestRenderer.createRenderer();
       });
 
       describe(`react@${version}`, () => {
@@ -68,6 +77,39 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
           );
 
           expect(container.textContent).toBe('6');
+        });
+
+        it('should support shallow rendering', () => {
+          class ClassComponent extends React.Component {
+            constructor(props) {
+              super(props);
+              this.state = {count: 1};
+            }
+            static getDerivedStateFromProps(nextProps, prevState) {
+              return {
+                count: prevState.count + nextProps.incrementBy,
+              };
+            }
+            render() {
+              return React.createElement('div', null, this.state.count);
+            }
+          }
+
+          polyfill(ClassComponent);
+
+          testRenderer.render(
+            React.createElement(ClassComponent, {incrementBy: 2})
+          );
+
+          let result = testRenderer.getRenderOutput();
+          expect(result.props.children).toBe(3);
+
+          testRenderer.render(
+            React.createElement(ClassComponent, {incrementBy: 3})
+          );
+
+          result = testRenderer.getRenderOutput();
+          expect(result.props.children).toBe(6);
         });
 
         it('should support create-react-class components', () => {

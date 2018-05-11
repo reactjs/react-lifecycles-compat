@@ -16,10 +16,11 @@ function componentWillMount() {
 function componentWillReceiveProps(nextProps) {
   // Call this.constructor.gDSFP to support sub-classes.
   // Use the setState() updater to ensure state isn't stale in certain edge cases.
-  this.setState(function updater(prevState) {
+  function updater(prevState) {
     var state = this.constructor.getDerivedStateFromProps(nextProps, prevState);
     return state !== null && state !== undefined ? state : null;
-  });
+  }
+  this.setState(updater.bind(this));
 }
 
 function componentWillUpdate(nextProps, nextState) {
