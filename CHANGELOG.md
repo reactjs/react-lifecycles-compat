@@ -7,6 +7,10 @@
   </summary>
 </details>
 
+## 3.0.4 (May 11, 2018)
+
+Fixed shallow renderer regression (introduced in 3.0.3) that caused `setState` updater to fail due to incorrect `this`. ([#26](https://github.com/reactjs/react-lifecycles-compat/pull/26))
+
 ## 3.0.3 (May 9, 2018)
 
 Fixed an edge case bug where a batched update containing both a `setState` updater and a parent re-render could result in dropped `state` updates. ([#24](https://github.com/reactjs/react-lifecycles-compat/pull/24))
