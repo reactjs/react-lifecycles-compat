@@ -243,7 +243,7 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
             static getDerivedStateFromProps(nextProps, prevState) {
               return {
                 ...BaseClass.getDerivedStateFromProps(nextProps, prevState),
-                bar: 'bar'
+                bar: 'bar',
               };
             }
             render() {
