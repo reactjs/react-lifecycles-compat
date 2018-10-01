@@ -50,7 +50,7 @@ componentWillUpdate.__suppressDeprecationWarning = true;
 export function polyfill(Component) {
   var prototype = Component.prototype;
 
-  if (!prototype || !prototype.render === 'function') {
+  if (!prototype || typeof prototype.render != 'function') {
     throw new Error('Can only polyfill class components');
   }
 
