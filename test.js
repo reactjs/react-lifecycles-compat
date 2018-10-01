@@ -241,11 +241,10 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
 
           class SubClass extends BaseClass {
             static getDerivedStateFromProps(nextProps, prevState) {
-              return Object.assign(
-                {},
-                BaseClass.getDerivedStateFromProps(nextProps, prevState),
-                {bar: 'bar'}
-              );
+              return {
+                ...BaseClass.getDerivedStateFromProps(nextProps, prevState),
+                bar: 'bar'
+              };
             }
             render() {
               return React.createElement(
