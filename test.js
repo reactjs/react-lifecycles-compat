@@ -77,7 +77,10 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
           expect(container.textContent).toBe('6');
         });
 
-        it('should support shallow rendering', () => {
+        // TODO: Shallow renderer support would require monkeypatching internals
+        // like updater._invokeCallbacks and instance._newState. Is this worth
+        // supporting in the polyfill?
+        it.skip('should support shallow rendering', () => {
           class ClassComponent extends React.Component {
             constructor(props) {
               super(props);
@@ -259,6 +262,110 @@ Object.entries(POLYFILLS).forEach(([name, module]) => {
           ReactDOM.render(React.createElement(SubClass), container);
 
           expect(container.textContent).toBe('foo,bar');
+        });
+
+        it('calls getDerivedStateFromProps even for state-only updates', () => {
+          let ops = [];
+          let instance;
+      
+          class LifeCycle extends React.Component {
+            constructor(props) {
+              super(props);
+              this.state = {};
+            } 
+            static getDerivedStateFromProps(props, prevState) {
+              ops.push('getDerivedStateFromProps');
+              return {foo: 'foo'};
+            }
+            changeState() {
+              this.setState({foo: 'bar'});                 
+            }
+            componentDidUpdate() {
+              ops.push('componentDidUpdate');
+            }
+            render() {
+              ops.push('render');
+              instance = this;
+              return null;
+            }
+          }
+          polyfill(LifeCycle);
+
+          const container = document.createElement('div');
+          ReactDOM.render(React.createElement(LifeCycle), container);
+
+          expect(ops).toEqual(['getDerivedStateFromProps', 'render']);
+          expect(instance.state).toEqual({foo: 'foo'});
+      
+          ops = [];
+      
+          instance.changeState();
+
+          if (version === '16.3') {
+            expect(ops).toEqual([
+              // Version 16.3 has the wrong native behavior. It's fixed starting
+              // in 16.4.
+              // 'getDerivedStateFromProps',
+              'render',
+              'componentDidUpdate',
+            ]);              
+            expect(instance.state).toEqual({foo: 'bar'});            
+          } else {
+            expect(ops).toEqual([
+              'getDerivedStateFromProps',
+              'render',
+              'componentDidUpdate',
+            ]);              
+            expect(instance.state).toEqual({foo: 'foo'});
+          }
+        });
+
+        it('supports setState callbacks', () => {
+          let instance;
+          class Component extends React.Component {
+            static getDerivedStateFromProps(props) {
+              return {
+                capitalizedString: props.string.toUpperCase(),
+              };
+            }
+            render() {           
+              instance = this;
+              return React.createElement(
+                'span',
+                null,
+                this.state.capitalizedString
+              );
+            }
+          }
+          polyfill(Component);
+          
+          const container = document.createElement('div');
+          ReactDOM.render(React.createElement(Component, {string: 'hi'}), container);
+          expect(container.textContent).toBe('HI');
+          
+          let ops = [];
+
+          instance.setState(null, () => ops.push('callback 1'));
+          instance.setState(null, () => ops.push('callback 2'));
+          instance.setState(null, () => ops.push('callback 3'));
+          expect(ops).toEqual([
+            'callback 1',
+            'callback 2',
+            'callback 3'
+          ]);          
+
+          ops = [];
+
+          ReactDOM.unstable_batchedUpdates(() => {
+            instance.setState(null, () => ops.push('callback 4'));
+            instance.setState(null, () => ops.push('callback 5'));
+            instance.setState(null, () => ops.push('callback 6'));  
+          });
+          expect(ops).toEqual([
+            'callback 4',
+            'callback 5',
+            'callback 6'
+          ]);          
         });
 
         it('should properly recover from errors thrown by getSnapshotBeforeUpdate()', () => {

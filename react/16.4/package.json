@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "devDependencies": {
+    "create-react-class": "^15.6.2",
+    "react": "16.4",
+    "react-dom": "16.4",
+    "react-test-renderer": "16.4"
+  },
+  "scripts": {
+    "test": "jest test.js"
+  }
+}

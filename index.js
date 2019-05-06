@@ -5,23 +5,111 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-function componentWillMount() {
-  // Call this.constructor.gDSFP to support sub-classes.
-  var state = this.constructor.getDerivedStateFromProps(this.props, this.state);
-  if (state !== null && state !== undefined) {
-    this.setState(state);
+// Conceptually, getDerivedStateFromProps is like a setState updater function.
+// But it needs to be called *after* all the other updates in the queue, and it
+// must be called exactly once, right before shouldComponentUpdate.
+//
+// Other than getDerivedStateFormProps itself, there's no lifecycle that meets
+// these requirements. componentWillReceiveProps fires only if the props have
+// changed. componentWillUpdate fires too late.
+//
+// This polyfill works by monkeypatching instance.updater. updater is an
+// internal-ish API that has stayed mostly stable across several major versions
+// of React. The polyfill intercepts updates before they are added to the native
+// update queue. Then it schedules a single update with the native update queue,
+// in the form of an updater function. Inside that updater function, the
+// intercepted updates are processed. Finally, getDerivedStateFromProps is
+// called and applied. This approach guarantees that getDerivedStateFromProps is
+// always called at the end.
+function processUpdateQueue(prevState, nextProps) {
+  var queue = this.__updateQueue;
+  this.__updateQueue = null;
+  if (queue === null || queue === undefined) {
+    return null;
   }
+  // First process all the user-provided updates
+  var nextState = prevState;
+  var update = null;
+  var payload = null;
+  var callback = null;
+  for (let i = 0; i < queue.length; i++) {
+    update = queue[i];
+    payload = update.payload;
+    callback = update.callback;
+    if (typeof payload === 'function') {
+      payload = payload.call(this, prevState, nextProps);
+    }
+    if (payload !== null && payload !== undefined) {
+      nextState = Object.assign({}, prevState, payload);
+    }
+    if (callback !== null) {
+      let callbacks = this.__callbacks;
+      if (callbacks === null || callbacks === undefined) {
+        this.__callbacks = [callback];
+      } else {
+        callbacks.push(callback);
+      }
+    }
+  }
+  // Now that we've processed all the updates, we can call
+  // `getDerivedStateFromProps`. This always comes last.
+  var derivedState =
+    this.constructor.getDerivedStateFromProps(nextProps, nextState);
+  if (derivedState !== null && derivedState !== undefined) {
+    nextState = Object.assign({}, prevState, derivedState);
+  }
+  return nextState;
 }
 
-function componentWillReceiveProps(nextProps) {
-  // Call this.constructor.gDSFP to support sub-classes.
-  // Use the setState() updater to ensure state isn't stale in certain edge cases.
-  function updater(prevState) {
-    var state = this.constructor.getDerivedStateFromProps(nextProps, prevState);
-    return state !== null && state !== undefined ? state : null;
-  }
-  // Binding "this" is important for shallow renderer support.
-  this.setState(updater.bind(this));
+function componentWillMount() {
+  const originalUpdater = this.updater;
+  
+  this.updater = {
+    enqueueSetState(instance, payload, callback) {
+      var update = {
+        payload: payload,
+        callback: callback === undefined ? null : callback
+      };
+      let queue = instance.__updateQueue;
+      if (queue === null || queue === undefined) {
+        // Create a queue of updates. This will act as a polyfill for the native
+        // update queue.
+        queue = instance.__updateQueue = [update];
+        // The native update queue should contain a single update function.
+        // In that function, we will process all the updates in the polyfilled
+        // queue. This allows us to call `getDerivedStateFromProps` after all
+        // the other updates have been processed.
+        originalUpdater.enqueueSetState(instance, processUpdateQueue);
+      } else {
+        // We already scheduled an update on the native queue. Push onto the
+        // polyfilled queue.
+        queue.push(update);
+      }
+    },
+    enqueueReplaceState() {
+      // Not worth implementing this since class components do no have a
+      // `replaceState` method.
+      throw new Error(
+        'react-lifecycles-compat: enqueueReplaceState is not supported'
+      );
+    },
+    // Note: Because forceUpdate does not accept an updater function, we can't
+    // polyfill this correctly unless we're inside batchedUpdates. So gDSFP
+    // will not fire unless we receive new props OR there's another update in
+    // the same batch.
+    enqueueForceUpdate: originalUpdater.enqueueForceUpdate,
+    enqueueCallback(instance, callback) {
+      instance.updater.enqueueSetState(instance, null, callback);
+    }
+  };
+
+  // Add an empty update to the queue to trigger getDerivedStateFromProps
+  this.setState(null);
+}
+
+function componentWillReceiveProps() {
+  // Add an empty update to the queue to trigger getDerivedStateFromProps.
+  this.setState(null);
 }
 
 function componentWillUpdate(nextProps, nextState) {
@@ -109,33 +197,21 @@ export function polyfill(Component) {
     );
   }
 
-  // React <= 16.2 does not support static getDerivedStateFromProps.
-  // As a workaround, use cWM and cWRP to invoke the new static lifecycle.
-  // Newer versions of React will ignore these lifecycles if gDSFP exists.
-  if (typeof Component.getDerivedStateFromProps === 'function') {
-    prototype.componentWillMount = componentWillMount;
-    prototype.componentWillReceiveProps = componentWillReceiveProps;
-  }
-
-  // React <= 16.2 does not support getSnapshotBeforeUpdate.
-  // As a workaround, use cWU to invoke the new lifecycle.
-  // Newer versions of React will ignore that lifecycle if gSBU exists.
-  if (typeof prototype.getSnapshotBeforeUpdate === 'function') {
-    if (typeof prototype.componentDidUpdate !== 'function') {
-      throw new Error(
-        'Cannot polyfill getSnapshotBeforeUpdate() for components that do not define componentDidUpdate() on the prototype'
-      );
+  var componentDidUpdate = prototype.componentDidUpdate;  
+  function componentDidUpdatePolyfill(prevProps, prevState, maybeSnapshot) {
+    if (typeof Component.getDerivedStateFromProps === 'function') {
+      // If getDerivedStateFromProps is defined, we polyfilled the update queue.
+      // Flush the callbacks here.
+      var callbacks = this.__callbacks;
+      if (callbacks !== null && callbacks !== undefined) {
+        this.__callbacks = null;
+        for (var i = 0; i < callbacks.length; i++) {
+          callbacks[i].call(this);
+        }
+      }
     }
 
-    prototype.componentWillUpdate = componentWillUpdate;
-
-    var componentDidUpdate = prototype.componentDidUpdate;
-
-    prototype.componentDidUpdate = function componentDidUpdatePolyfill(
-      prevProps,
-      prevState,
-      maybeSnapshot
-    ) {
+    if (typeof componentDidUpdate === 'function') {
       // 16.3+ will not execute our will-update method;
       // It will pass a snapshot value to did-update though.
       // Older versions will require our polyfilled will-update value.
@@ -149,7 +225,30 @@ export function polyfill(Component) {
         : maybeSnapshot;
 
       componentDidUpdate.call(this, prevProps, prevState, snapshot);
-    };
+    }
+  }
+
+  // React <= 16.2 does not support static getDerivedStateFromProps.
+  // As a workaround, use cWM and cWRP to invoke the new static lifecycle.
+  // Newer versions of React will ignore these lifecycles if gDSFP exists.
+  if (typeof Component.getDerivedStateFromProps === 'function') {
+    prototype.componentWillMount = componentWillMount;
+    prototype.componentWillReceiveProps = componentWillReceiveProps;
+    prototype.componentDidUpdate = componentDidUpdatePolyfill;
+  }
+
+  // React <= 16.2 does not support getSnapshotBeforeUpdate.
+  // As a workaround, use cWU to invoke the new lifecycle.
+  // Newer versions of React will ignore that lifecycle if gSBU exists.
+  if (typeof prototype.getSnapshotBeforeUpdate === 'function') {
+    prototype.componentWillUpdate = componentWillUpdate;
+    if (typeof prototype.componentDidUpdate !== 'function') {    
+      throw new Error(
+        'Cannot polyfill getSnapshotBeforeUpdate() for components that do ' +
+          'not define componentDidUpdate() on the prototype'
+      );
+    }
+    prototype.componentDidUpdate = componentDidUpdatePolyfill;
   }
 
   return Component;
