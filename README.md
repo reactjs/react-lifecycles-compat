@@ -9,6 +9,7 @@ Typically, this type of change would require third party libraries to release a 
 ## How can I use the polyfill
 
 First, install the polyfill from NPM:
+
 ```sh
 # Yarn
 yarn add react-lifecycles-compat
@@ -20,6 +21,7 @@ npm install react-lifecycles-compat --save
 Next, update your component and replace any of the deprecated lifecycles with new ones introduced with React 16.3. (Refer to the React docs for [examples of how to use the new lifecycles](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html).)
 
 Lastly, use the polyfill to make the new lifecycles work with older versions of React:
+
 ```js
 import React from 'react';
 import {polyfill} from 'react-lifecycles-compat';
