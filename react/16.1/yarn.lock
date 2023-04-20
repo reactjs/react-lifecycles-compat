@@ -87,8 +87,8 @@ prop-types@^15.6.0:
     object-assign "^4.1.1"
 
 react-dom@16.1:
-  version "16.1.1"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.1.1.tgz#b2e331b6d752faf1a2d31399969399a41d8d45f8"
+  version "16.1.2"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.1.2.tgz#c4011fa5183fcbdf34344472935ef920d8dc7179"
   dependencies:
     fbjs "^0.8.16"
     loose-envify "^1.1.0"
